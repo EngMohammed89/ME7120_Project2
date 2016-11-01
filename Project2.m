@@ -8,7 +8,7 @@ Y1 = 0; Y2 = 0; Y3 = 190; Y4 = 190; Y5 = 0; Y6 = 0; Y7 = 190; Y8 = 190;
 
 Z1 = 74; Z2 = 0; Z3 = 32; Z4 = 42; Z5 = 74; Z6 = 0; Z7 = 32; Z8 = 42;
 
-% Natural co-ordinates for Jacobian at middle
+% Natural co-ordinates for Jacobian at node 1
 Xi = -1
 Eta = -1
 Zeta = 1
