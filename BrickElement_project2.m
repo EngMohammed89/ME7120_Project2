@@ -50,10 +50,10 @@ if strcmp(mode,'generate')
           %There have to be 10 elements for this element's
           %definition (above)
           
-  if length(b)==10
+  if length(b)==9
       element(elnum).nodes=b(1:8);
-      element(elnum).properties=b(10);
-      element(elnum).point=b(9);
+      element(elnum).properties=b(9);
+      
   else 
 	  b
       %There have to be ten numbers on a line defining the
@@ -71,7 +71,7 @@ end
 if strcmp(mode,'make')||strcmp(mode,'istrainforces')
   elnum=b;% When this mode is called, the element number is given
           % as the second input.
-  bnodes=[element(elnum).nodes element(elnum).point];% The point is
+  bnodes=[element(elnum).nodes];% The point is
                                                      % referred to
                                                      % as node 4
                                                      % below,
@@ -166,32 +166,23 @@ if strcmp(mode,'make')
   x8=nodes(bnodes(8),1);
   y8=nodes(bnodes(8),2);
   z8=nodes(bnodes(8),3);
-  x9=points(bnodes(9),1);
-  y9=points(bnodes(9),2);
-  z9=points(bnodes(9),3);
-  
+ 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %
-  % Shape functions for higher order beam. 
-  %
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  % Shape functions in matrix polynomial form (polyval style) for bending
-  % Should be 4 shape functions, each a 1 x 4 matrix
-  bn1 =   [0.25 0.00 -0.75 0.50];
-  bn1d =  [0.75 0.00 -0.75];
-  bn1dd = [1.50 0.00];
-  bn2 =   [0.25 -0.25 -0.25 0.25];
-  bn2d =  [0.75 -0.50 -0.25];
-  bn2dd = [1.50 -0.50];
-  bn3 =   [-0.25 0.00 0.75 0.50];
-  bn3d =  [-0.75 0.00 0.75];
-  bn3dd = [-1.50 0.00];
-  bn4 =   [0.25 0.25 -0.25 -0.25];
-  bn4d =  [0.75 0.50 -0.25];
-  bn4dd = [1.50 0.50];
 
-% Elasticity Matrix
+%% Shape functions for brick element. 
+Xi_I=[-1 -1 -1 -1 1 1 1 1]; 
+Eta_I=[-1 -1 1 1 -1 -1 1 1];
+Zeta_I=[1 -1 -1 1 1 -1 -1 1];
+ N=[]; % creates N matrix
+for i=1:8 % iterates over each node
+    Ni=(1/8)*(1+Epsilon*Xi_I(i))*(1+Eta*Eta_I(i))*(1+Zeta*Zeta_I(i)); % Calculates each nodal shape function
+    Ne=[Ni Ni Ni]; % Creates a nodal N matrix
+    Ne=diag(Ne); % stores the shape function on the diagonal
+    N=[N Ne]; % appends the element shape function matrix with the nodal matrix
+end
+
+%% Elasticity Matrix
 E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
                              v  (1-v)  v      0        0        0;
                              v    v  (1-v)    0        0        0;
@@ -205,8 +196,61 @@ E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
   l=norm([x2 y2 z2]-[x1 y1 z1]);
   propertynum=num2str(element(elnum).properties);
     
-  Jac=l/2;% Brick element Jacobian. 
-          % Local Bending in x-y plane
+%% Find Jacobian at the middle
+Xi=0;
+Eta=0;
+Zeta=0;
+
+for i=1:8
+    dNdXi(i)=(1/8)*Xi_I(i)*(1+Eta*Eta_I(i))*(1+Zeta*Zeta_I(i));
+    dNdEta(i)=(1/8)*Eta_I(i)*(1+Xi*Xi_I(i))*(1+Zeta*Zeta_I(i));
+    dNdZeta(i)=(1/8)*Zeta_I(i)*(1+Xi*Xi_I(i))*(1+Eta*Eta_I(i));
+end
+
+Jac=[dNdXi; dNdEta; dNdZeta]*[x' y' z']; % assembles derivative and nodal locations matrices and multiplies
+J_inv=inv(Jac); % finds the inverse of J
+
+for i=1:8
+    R=J_inv*[dNdXi(i); dNdEta(i); dNdZeta(i)]; % finds the cartesian derivatives
+    dNdx(i)=R(1); % stores the current nodal x derivative
+    dNdy(i)=R(2); % stores the current nodal y derivative
+    dNdz(i)=R(3); % stores the current nodal z derivative
+end
+ 
+%% Preparing B matrix
+
+B=zeros(6,24); % Preallocates B
+for i=1:8 % loops for each node of the element
+    Bi=[dNdx(i) 0       0;
+        0       dNdy(i) 0;
+        0       0       dNdz(i);
+        dNdy(i) dNdx(i) 0;
+        0       dNdz(i) dNdy(i);
+        dNdz(i) 0       dNdx(i)]; % builds nodal B matrix
+    j=1+(i-1)*3; % j and k are indices for placing Bi within B correctly
+    k=i*3;
+    B(:,j:k)=Bi(:,:); % Stores Bi in the appropriate node location in B
+end
+
+%% DErivation of Stiffness matrix
+ numbrickgauss=5; % Chooses a number of gauss points for the stiffness matrix
+ [bgpts,bgpw]=gauss([numbrickgauss,numbrickgauss,numbrickgauss]); % finds the gauss points and weights
+  for i=1:size(bgpts,1) % loops over all the gauss points
+      [J,dNdx,dNdy,dNdz]=J_Matrix(bgpts(i,1),bgpts(i,2),bgpts(i,3),xvec,yvec,zvec); % Finds J for the current Gauss point
+      B=B_Matrix(dNdx,dNdy,dNdz); % Finds B for the current Gauss point
+      Bt=B'; % Calculates B transpose
+      Ki=bgpw(i)*Bt*Emat*B*det(J); % Calculates the weighted Gauss point stiffness
+      Ke(1:24,1:24)=Ke(1:24,1:24)+Ki(1:24,1:24); % adds the weighted Gauss point stiffness to the element stiffness
+
+      Ba=Ba_Matrix(J,bgpts(i,1),bgpts(i,2),bgpts(i,3)); 
+      B=[B Ba];
+      Bt=B'; % Calculates B transpose
+      Ki=bgpw(i)*Bt*Emat*B*det(Jac); % Calculates the weighted Gauss point stiffness
+      Ke(1:33,25:33)=Ke(1:33,25:33)+Ki(1:33,25:33); % adds the weighted Gauss point stiffness to the element stiffness
+      Ke(25:33,1:24)=Ke(25:33,1:24)+Ki(25:33,1:24);
+  end
+
+
   for i=1:numbeamgauss
     bricksfs=[polyval(bn1dd,bgpts(i))/Jac^2;%evaluating second
                                            %derivatives of shape
