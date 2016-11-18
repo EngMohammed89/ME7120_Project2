@@ -1,7 +1,6 @@
 function [ B ] = B_brick(dNdx, dNdy, dNdz)
 %Builds B Matrix
-%B_brick takes dNdx, dNdy, and dNdz as output from J_brick and calculates
-
+%B_brick takes dNdx, dNdy, and dNdz
 
 B=zeros(6,24); 
 for i=1:8 %Assembles B matrix
