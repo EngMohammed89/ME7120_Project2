@@ -1,6 +1,5 @@
-function [ Ba ] = Ba_brick( J,Epsilon,Eta,Zeta )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+function [ Ba ] = Ba_brick(J,Epsilon,Eta,Zeta)
+
 
 Ba1=J\[-2*Epsilon; 0; 0];
 Ba2=J\[0; -2*Eta; 0];
@@ -26,4 +25,3 @@ Bi1=[Ba1(1) 0      0;
  Ba=[Bi1 Bi2 Bi3];
 
 end
-
