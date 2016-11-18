@@ -1,8 +1,7 @@
-function [ N ] = N_brick( Epsilon, Eta, Zeta )
+function [ N ] = N_brick(Epsilon, Eta, Zeta)
 % N_brick uses inputs Epsilon, Eta and Zeta to generate N
 
-% Epsilon is Xi in the notes. EpsilonI, EtaI, and ZetaI are the nodal
-% values in order
+
 EpsilonI=[-1 -1 -1 -1 1 1 1 1];
 EtaI=[-1 -1 1 1 -1 -1 1 1];
 ZetaI=[1 -1 -1 1 1 -1 -1 1];
@@ -15,4 +14,3 @@ for i=1:8 % iterates over each node
 end
 
 end
-
