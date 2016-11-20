@@ -1,7 +1,6 @@
 function [ N ] = N_brick(Epsilon, Eta, Zeta)
 % N_brick uses inputs Epsilon, Eta and Zeta to generate N
 
-
 EpsilonI=[-1 -1 -1 -1 1 1 1 1];
 EtaI=[-1 -1 1 1 -1 -1 1 1];
 ZetaI=[1 -1 -1 1 1 -1 -1 1];
@@ -11,6 +10,4 @@ for i=1:8 % iterates over each node
     Ne=[Ni Ni Ni]; % Creates a nodal N matrix
     Ne=diag(Ne); % stores the shape function on the diagonal
     N=[N Ne]; % appends the element shape function matrix with the nodal matrix
-end
-
 end
