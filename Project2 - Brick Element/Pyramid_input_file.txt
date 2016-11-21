@@ -4,7 +4,7 @@
 element properties
 % Brick element format
 % E G rho
-200e9 75e9 7800  
+steel  
 
 % I also used "steel" as a property. WFEM has some of these predefined. 
 % Run "units" and type "who" to see variables/values available inside your
