@@ -209,8 +209,6 @@ E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
   K(indices,indices)=K(indices,indices)+Ke;
   M(indices,indices)=M(indices,indices)+Me;
 
-  eigen_values=real(eigs(K,24))
-  
   % At this point we also know how to draw the element (what lines
   % and surfaces exist). For the beam3 element, 2 lines are
   % appropriate. Just add the pair of node numbers to the lines
