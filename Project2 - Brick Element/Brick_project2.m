@@ -187,12 +187,6 @@ E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
       Me=Me+bgpw(i)*N'*rho*N*det(Jac); % Gauss integration part to find the element mass matrix
   end
 
-  %% Using Guyan Reduction
-  
-  [Kr,Mr]=guyan(Ke,Me);
-  Ke = Kr;
-  Me = Mr;
-  
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
   % Assembling matrices into global matrices
