@@ -13,7 +13,7 @@ steel
 BrickGuyan_project2 elements
 % node1 node2 node3 node4 node5 node6 
 % node7 node8 (beam properties number)
-1	` 2 3 4 5 6 7 8 1 
+1 2 3 4 5 6 7 8 1 
 5 6 7 8 9 10 11 12 1
 6 16 15 7 10 13 14 11 1
 2 17 18 3 6 16 15 7 1
@@ -37,7 +37,7 @@ nodes
 11 2 0.7 0.8
 12 2 0 0.7
 13 2  2  0
-14 2 0.9 0.7
+14 2 2 0.7
 15 1.3 2 1.2
 16 1.2 2 0
 17 0  2  0
@@ -45,7 +45,7 @@ nodes
 19 0  0  2 
 20 0 0.7 2
 21 1 1.1 2
-22 0 0.8 2
+22 1 0 2
 23 2  0  2
 24 2 1.2 2
 25 2  2  2
@@ -57,40 +57,53 @@ nodes
 points
 1 1 1 1
 
-fix clamp
-1
+%fix clamp
+%1
+
+fix pin
+1 0 0 1
+4 0 0 1
+19 0 0 1
 
 % The preceeding put a clamp boundary condition on node 1.
 
 fix surfaceball
-4 0 1 0
-5 0 1 0
-8 0 1 0
-9 0 1 0
-12 0 1 0
-19 0 1 0
-22 0 1 0
-23 0 1 0
+5 0  1 0
+8 0  1 0
+9 0  1 0
+12 0  1 0
+22 0  1 0
+23 0  1 0
+2 0 0 1
+2 1  0 0
+3 0 0 1
+3 1  0 0
+20 0 0 1
+20 1  0 0
+17 0 0 1
+17 1  0 0
+18 0 0 1
+18 1  0 0
+27 0 0 1
+27 1  0 0
+
 
 
 load 
-13 1 10
-14 1 10
-15 1 10
-16 1 10
-17 1 10
-18 1 10
-25 1 10
-26 1 10
-27 1 10
+13 2 10
+14 2 20
+15 2 40
+16 2 20
+17 2 10
+18 2 20
+25 2 10
+26 2 20
+27 2 10
 
 
 
 
-%fix pin
-%1 0 0 1
-%2 0 0 1
-%
+
 
 %
 % The preceeding from fix pin on would create a simply supported
