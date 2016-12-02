@@ -11,5 +11,5 @@ Q =[I;
 % Reduced stiffness matrix
 Kr=Q'*Ke*Q;
 % Reduced mass matrix
-Mr=Me
+Mr=Me;
 end

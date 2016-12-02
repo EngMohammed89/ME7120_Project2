@@ -1,5 +1,5 @@
 function out=BrickGuyan_project2(mode,b,c,d,e)
-  % Brick element does as listed below. 
+% Brick element does as listed below. 
 % Its properties (bprops) are in the order
 % bprops=[E G rho]
 % See wfem.m for more explanation.
@@ -47,11 +47,9 @@ end
 if strcmp(mode,'generate')
   elnum=c;%When this mode is called, the element number is the 3rd
           %argument. 
-  
           %The second argument (b) is the element
           %definition. For this element b is
           %node1 node2 node3 node4 node5 node6 node7 node8 materialnumber
-  
           %There have to be 9 elements for this element's
           %definition (above)
   if length(b)==9
@@ -86,7 +84,6 @@ bprops=elprops(element(elnum).properties).a;% element(elnum).properties
                                               % out any value you
                                               % need for your use. 
   
-% 
   if length(bprops)==3
       Em=bprops(1);  % Modulus of elasticity
       G=bprops(2);
@@ -139,20 +136,21 @@ if strcmp(mode,'make')
   y8=nodes(bnodes(8),2);
   z8=nodes(bnodes(8),3);
   
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- %% x, y and z are nodal locations. They are used to find Jacobian later.
+ %% x, y and z are nodal locations in the physical coordinate. 
+ %They will be used later to find Jacobian.
   x=[x1 x2 x3 x4 x5 x6 x7 x8];
   y=[y1 y2 y3 y4 y5 y6 y7 y8];
   z=[z1 z2 z3 z4 z5 z6 z7 z8]; 
   
- %% The nodal values of the natural coordinates
+ %% The nodal locations in the natural coordinate.
   Xi_N=[-1 -1 -1 -1 1 1 1 1]; 
   Eta_N=[-1 -1 1 1 -1 -1 1 1];
   Zeta_N=[1 -1 -1 1 1 -1 -1 1];
   
  %% Elasticity Matrix  
-v = (Em/(2*G))-1;
+v = (Em/(2*G))-1; % possion's ratio
 E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
                              v  (1-v)  v      0        0        0;
                              v    v  (1-v)    0        0        0;
@@ -171,14 +169,16 @@ E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
   % Finding Jacobian at the middle
   [Jac]=Jacobian(Xi_N,Eta_N,Zeta_N,0,0,0,x,y,z);
   J0=Jac;
-  % Derivation of the stiffness matrix
-  numbrickgauss=3; % Number of gauss points for the stiffness matrix
-  [bgpts,bgpw]=gauss([numbrickgauss,numbrickgauss,numbrickgauss]); % The gauss points and weights
+  % Derivation of the stiffness matrix, Ke
+  numbrickgauss=3; % Number of gauss points
+  [bgpts,bgpw]=gauss([numbrickgauss,numbrickgauss,numbrickgauss]); % Gauss points and weights
   for i=1:size(bgpts,1) 
-      [Jac,dNdx,dNdy,dNdz]=Jacobian(Xi_N,Eta_N,Zeta_N,bgpts(i,1),bgpts(i,2),bgpts(i,3),x,y,z); % Jacobian for the current Gauss point
-      Bd=B_matrix(dNdx,dNdy,dNdz); % B matrix for the current Gauss point 
+      % Finding Jacobian at the current Gauss point
+      [Jac,dNdx,dNdy,dNdz]=Jacobian(Xi_N,Eta_N,Zeta_N,bgpts(i,1),bgpts(i,2),bgpts(i,3),x,y,z); 
+      Bd=B_matrix(dNdx,dNdy,dNdz); % Bd matrix 
+      % Ba matrix for shear locking issue
       Ba=Ba_matrix(J0,bgpts(i,1),bgpts(i,2),bgpts(i,3));
-      B=[Bd Ba];
+      B=[Bd Ba]; % B matrix
       Ke=Ke+bgpw(i)*B'*E*B*det(Jac); % Gauss integration part to find the stiffness matrix
   end
   
@@ -193,7 +193,7 @@ E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
 
    %% Guyan Reduction
    [Ke,Me]=Guyan_reduction(Ke,Me);
-
+   
   %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
   % Assembling matrices into global matrices
@@ -202,7 +202,7 @@ E = (Em/((1+v)*(1-2*v)))* [(1-v)  v    v      0        0        0;
 
   bn1=bnodes(1);bn2=bnodes(2);bn3=bnodes(3);bn4=bnodes(4);
   bn5=bnodes(5);bn6=bnodes(6);bn7=bnodes(7);bn8=bnodes(8);
-  
+
   indices=[bn1*6+(-5:-3) bn2*6+(-5:-3) bn3*6+(-5:-3) bn4*6+(-5:-3)...
            bn5*6+(-5:-3) bn6*6+(-5:-3) bn7*6+(-5:-3) bn8*6+(-5:-3)] ;
 
