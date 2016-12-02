@@ -1,6 +1,5 @@
 variables
 %All of these actions are not the most efficient for this problem.
-pi=3.14159265
 d1=74e-9
 d2=66e-9
 d3=58e-9
